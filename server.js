@@ -24,7 +24,7 @@ app.use(session({
   resave: true,
   saveUninitialized: true,
   cookie: {
-    sameSite : "none",
+    sameSite: "none",
     secure: true,
     maxAge: 1000 * 60 * 60 * 27 * 7
   }
@@ -33,16 +33,16 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-passport.serializeUser((user, done)=> {
+passport.serializeUser((user, done) => {
   gId = user.id;
   return done(null, user.id)
 })
 
-passport.deserializeUser((userId, done)=>{
+passport.deserializeUser((userId, done) => {
   let db_connect = client.db("audiomarking");
   db_connect.collection("users").findOne({
     googleId: userId,
-  }, function(err, doc){
+  }, function (err, doc) {
     if (err) throw err;
     console.log(doc)
     return done(null, doc)
@@ -50,25 +50,26 @@ passport.deserializeUser((userId, done)=>{
 });
 
 passport.use(
-  new GoogleStrategy (
+  new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback"
     },
-    function (accessToken, refreshToken, profile, cb){
-      (async function (){
+    function (accessToken, refreshToken, profile, cb) {
+      (async function () {
         let db_connect = await client.db("audiomarking");
-        db_connect.collection("users").updateOne({googleId: profile.id},
-          {$setOnInsert: {
-            googleId: profile.id,
-            username: profile.displayName,
-            firstname: profile.name.givenName,
-            lastname: profile.name.familyName,
-            image: profile.photos[0].value
+        db_connect.collection("users").updateOne({ googleId: profile.id },
+          {
+            $setOnInsert: {
+              googleId: profile.id,
+              username: profile.displayName,
+              firstname: profile.name.givenName,
+              lastname: profile.name.familyName,
+              image: profile.photos[0].value
+            },
           },
-        },
-        {upsert: true});
+          { upsert: true });
       })();
       cb(null, profile);
     }
@@ -77,15 +78,15 @@ passport.use(
 
 const __dirname = path.resolve()
 
-if (process.env.NODE_ENV === 'production'){
+if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '/frontend/build')))
-  app.get('*', (req, res)=>{
+  app.get('*', (req, res) =>
     res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
-  })
+  )
 } else {
   app.get("/", (req, res) => {
-  res.send("Server is running");
-});
+    res.send("Server is running");
+  });
 }
 
 
@@ -94,7 +95,7 @@ app.set("trust proxy", 1)
 
 app.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ['profile']})
+  passport.authenticate("google", { scope: ['profile'] })
 )
 
 app.get(
@@ -108,13 +109,13 @@ app.get(
   }
 );
 
-app.get("/getuser", (req, res)=>{
+app.get("/getuser", (req, res) => {
   res.send(req.user)
 })
 
-app.get("/auth/logout", (req, res)=>{
-  if (req.user){
-    req.logout(function (err){
+app.get("/auth/logout", (req, res) => {
+  if (req.user) {
+    req.logout(function (err) {
       if (err) {
         return next(err)
       }
@@ -125,7 +126,7 @@ app.get("/auth/logout", (req, res)=>{
 
 app.use('/api', markingRoute)
 
-app.listen(process.env.PORT || 5000, ()=>{
+app.listen(process.env.PORT || 5000, () => {
   console.log(`Server started at ${process.env.PORT}!`)
 })
 
