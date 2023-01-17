@@ -1,0 +1,13 @@
+.table-css {
+  display: flex;
+  overflow: hidden;
+  overflow-y: scroll;
+  height: 65vh;
+  scroll-behavior: smooth;
+  flex-direction: column-reverse;
+}
+
+.table-head {
+  display: flex;
+  flex-direction: column;
+}
